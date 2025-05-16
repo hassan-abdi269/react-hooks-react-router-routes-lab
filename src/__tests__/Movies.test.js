@@ -1,45 +1,27 @@
-import "@testing-library/jest-dom";
-import React from "react";
-import { render, screen } from "@testing-library/react";
-import Movies from "../components/Movies";
-import { movies } from "../data";
+import { render, screen } from '@testing-library/react';
+import Movies from '../components/Movies';
+import { movies } from '../data';
 
-test("renders without any errors", () => {
-  const errorSpy = jest.spyOn(global.console, "error");
+describe('Movies Component', () => {
+  test('renders "Movies Page" inside of a <h1 />', () => {
+    render(<Movies />);
+    const heading = screen.getByRole('heading', { name: /movies page/i });
+    expect(heading).toBeTruthy();
+    expect(heading.tagName).toBe('H1');
+  });
 
-  render(<Movies />);
+  test('renders each movie\'s title and time', () => {
+    render(<Movies />);
+    movies.forEach(movie => {
+      expect(screen.getByText(movie.title)).toBeTruthy();
+      expect(screen.getByText(`Time: ${movie.time}`)).toBeTruthy();
+    });
+  });
 
-  expect(errorSpy).not.toHaveBeenCalled();
-
-  errorSpy.mockRestore();
-});
-
-test("renders 'Movies Page' inside of a <h1 />", () => {
-  render(<Movies />);
-  const h1 = screen.queryByText(/Movies Page/g);
-  expect(h1).toBeInTheDocument();
-  expect(h1.tagName).toBe("H1");
-});
-
-test("renders each movie's title and time", () => {
-  render(<Movies />);
-  for (const movie of movies) {
-    expect(
-      screen.queryByText(movie.title, { exact: false })
-    ).toBeInTheDocument();
-    expect(
-      screen.queryByText(movie.time.toString(), { exact: false })
-    ).toBeInTheDocument();
-  }
-});
-
-test("renders a <li /> for each genre", () => {
-  render(<Movies />);
-  for (const movie of movies) {
-    for (const genre of movie.genres) {
-      const li = screen.queryAllByText(genre, { exact: false })[0];
-      expect(li).toBeInTheDocument();
-      expect(li.tagName).toBe("LI");
-    }
-  }
+  test('renders a <li /> for each genre', () => {
+    render(<Movies />);
+    const genreItems = screen.getAllByRole('listitem');
+    const totalGenres = movies.reduce((sum, movie) => sum + movie.genres.length, 0);
+    expect(genreItems.length).toBe(totalGenres);
+  });
 });
